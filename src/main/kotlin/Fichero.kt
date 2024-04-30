@@ -1,9 +1,9 @@
 import java.io.File
 import java.io.FileWriter
 
-class Fichero(private val ruta: String): IFichero {
+class Fichero: IFichero {
 
-    override fun cargarFichero(): MutableList<String> {
+    override fun cargarFichero(ruta: String): MutableList<String> {
         val datos: MutableList<String> = mutableListOf()
 
         try {
@@ -14,7 +14,7 @@ class Fichero(private val ruta: String): IFichero {
         return datos
     }
 
-    override fun guardarFichero(lista: MutableList<String>) {
+    override fun guardarFichero(lista: MutableList<String>, ruta: String) {
         try {
             FileWriter(ruta).use { fichero ->
                 for (linea in lista) {
