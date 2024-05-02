@@ -40,7 +40,7 @@ fun NewStudent(
             label = { Text("New student name") },
             singleLine = true,
             modifier = Modifier.onKeyEvent { event ->
-                if (event.key == Key.Enter && newStudent.isNotBlank()) {
+                if (event.key == Key.Enter && event.type == KeyEventType.KeyDown && newStudent.isNotBlank()) {
                     onNewStudentClick()
                     true
                 } else false
@@ -119,50 +119,59 @@ fun ButtonSaveChanges(
 }
 
 
+@Composable
+fun StudentScreen(
+    fichero: IFichero
+) {
+    val ruta = "src/Estudiantes.txt"
+    var newStudent by remember { mutableStateOf("") }
+    val listaEstudiantes = remember { mutableStateListOf<String>() }
+
+    for (estudiante in fichero.cargarFichero(ruta)) {
+        listaEstudiantes.add(estudiante)
+
+        MaterialTheme {
+            Column(
+                modifier = Modifier.fillMaxSize().background(Color.Gray),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(30.dp, Alignment.CenterVertically),
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    NewStudent(
+                        newStudent,
+                        { newStudent = it },
+                        { listaEstudiantes.add(newStudent) }
+                    )
+
+                    ListaEstudiantes(
+                        listaEstudiantes
+                    )
+                    { fichero.borrarLista(listaEstudiantes) }
+                }
+
+                ButtonSaveChanges {
+                    fichero.guardarFichero(listaEstudiantes, ruta)
+                }
+            }
+        }
+    }
+}
+
+
 fun main() = application {
     val windosState = rememberWindowState(size = DpSize(1200.dp, 800.dp))
     val icon = BitmapPainter(useResource("sample.png", ::loadImageBitmap))
-    val ruta = "src/Estudiantes.txt"
     val fichero: IFichero = Fichero()
-    var newStudent by remember { mutableStateOf("") }
-    val listaEstudiantes = remember { mutableStateListOf<String>() }
 
     Window(onCloseRequest = ::exitApplication,
         title = "My Students",
         state = windosState,
         icon = icon
         ) {
-        for (estudiante in fichero.cargarFichero(ruta)) {
-            listaEstudiantes.add(estudiante)
-
-            MaterialTheme {
-                Column(
-                    modifier = Modifier.fillMaxSize().background(Color.Gray),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(30.dp, Alignment.CenterVertically),
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        NewStudent(
-                            newStudent,
-                            { newStudent = it },
-                            { listaEstudiantes.add(newStudent) }
-                        )
-
-                        ListaEstudiantes(
-                            listaEstudiantes
-                        )
-                        { fichero.borrarLista(listaEstudiantes) }
-                    }
-
-                    ButtonSaveChanges {
-                        fichero.guardarFichero(listaEstudiantes, ruta)
-                    }
-                }
-            }
-        }
+        StudentScreen(fichero)
     }
 }
 
